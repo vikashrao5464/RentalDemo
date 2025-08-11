@@ -4,19 +4,19 @@ import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import { PrismaClient } from '@prisma/client'
 import logger from './config/logger.js'
+import env from './config/env.js'
 import { errorHandler } from './middleware/error.middleware.js'
 import healthRoutes from './routes/health.routes.js'
+import authRoutes from './routes/auth.routes.js'
 
 const app = express()
 const prisma = new PrismaClient()
-const PORT = process.env.PORT || 5000
+const PORT = env.PORT
 
 // Middleware
 app.use(helmet())
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
-    : ['http://localhost:5173'],
+  origin: env.CORS_ORIGINS.split(','),
   credentials: true
 }))
 app.use(express.json({ limit: '10mb' }))
@@ -31,6 +31,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/health', healthRoutes)
+app.use('/api/auth', authRoutes)
 
 // 404 handler
 app.use('*', (req, res) => {
