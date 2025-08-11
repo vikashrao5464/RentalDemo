@@ -20,4 +20,52 @@
   .input-field {
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
   }
+
+  /* React Date Range Customization */
+  .rdrCalendarWrapper {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+  }
+  
+  .rdrDateRangePickerWrapper {
+    @apply inline-block;
+  }
+  
+  .rdrDefinedRangesWrapper {
+    @apply hidden;
+  }
+  
+  .rdrDateDisplayWrapper {
+    @apply bg-gray-50;
+  }
+  
+  .rdrDateDisplay {
+    @apply text-gray-700;
+  }
+  
+  .rdrMonthAndYearWrapper {
+    @apply bg-gray-50 border-b border-gray-200;
+  }
+  
+  .rdrNextPrevButton {
+    @apply text-gray-600 hover:text-gray-800;
+  }
+  
+  .rdrDay:not(.rdrDayPassive) .rdrInRange ~ .rdrDayNumber span,
+  .rdrDay:not(.rdrDayPassive) .rdrStartEdge ~ .rdrDayNumber span,
+  .rdrDay:not(.rdrDayPassive) .rdrEndEdge ~ .rdrDayNumber span {
+    @apply text-white;
+  }
+  
+  .rdrDayInRange {
+    @apply bg-primary-100;
+  }
+  
+  .rdrDayStartEdge,
+  .rdrDayEndEdge {
+    @apply bg-primary-600;
+  }
+  
+  .rdrDayHovered {
+    @apply bg-primary-50;
+  }
 }

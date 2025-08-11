@@ -265,9 +265,10 @@ async function main() {
     for (const [unit, price] of Object.entries(productData.pricing)) {
       await prisma.pricelistItem.upsert({
         where: {
-          pricelistId_productId_unit: {
+          pricelistId_productId_categoryId_unit: {
             pricelistId: basePricelist.id,
             productId: product.id,
+            categoryId: null,
             unit: unit
           }
         },
@@ -276,10 +277,58 @@ async function main() {
           pricelistId: basePricelist.id,
           productId: product.id,
           unit: unit,
-          price: price
+          rate: price
         }
       })
     }
+
+    // Create some category-level pricing rules as examples
+    if (productData.categoryName === 'Electronics') {
+      await prisma.pricelistItem.upsert({
+        where: {
+          pricelistId_productId_categoryId_unit: {
+            pricelistId: basePricelist.id,
+            productId: null,
+            categoryId: category.id,
+            unit: 'month'
+          }
+        },
+        update: {},
+        create: {
+          pricelistId: basePricelist.id,
+          categoryId: category.id,
+          unit: 'month',
+          rate: 2000 // Default monthly rate for electronics
+        }
+      })
+    }
+  }
+
+  // Create some default pricing rules
+  const defaultRules = [
+    { unit: 'hour', rate: 5 },
+    { unit: 'day', rate: 30 },
+    { unit: 'week', rate: 180 },
+    { unit: 'month', rate: 600 }
+  ]
+
+  for (const rule of defaultRules) {
+    await prisma.pricelistItem.upsert({
+      where: {
+        pricelistId_productId_categoryId_unit: {
+          pricelistId: basePricelist.id,
+          productId: null,
+          categoryId: null,
+          unit: rule.unit
+        }
+      },
+      update: {},
+      create: {
+        pricelistId: basePricelist.id,
+        unit: rule.unit,
+        rate: rule.rate
+      }
+    })
   }
 
   console.log('✅ Database seeded successfully!')

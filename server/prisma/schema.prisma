@@ -57,6 +57,7 @@ model Category {
 
   // Relations
   products Product[]
+  pricelistItems PricelistItem[]
 
   @@map("categories")
 }
@@ -133,20 +134,24 @@ model Pricelist {
 
 model PricelistItem {
   id        String   @id @default(cuid())
+  productId String?  // Specific product (highest priority)
+  categoryId String? // Category-wide pricing (medium priority)
   unit      String   // 'hour', 'day', 'week', 'month'
-  price     Decimal  @db.Decimal(10, 2)
+  rate      Decimal  @db.Decimal(10, 2)
   minDuration Int?   // minimum rental duration
   maxDuration Int?   // maximum rental duration
+  validFrom DateTime? // Rule validity period
+  validTo   DateTime? // Rule validity period
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
   pricelist   Pricelist @relation(fields: [pricelistId], references: [id])
   pricelistId String
-  product     Product   @relation(fields: [productId], references: [id])
-  productId   String
+  product     Product?  @relation(fields: [productId], references: [id])
+  category    Category? @relation(fields: [categoryId], references: [id])
 
-  @@unique([pricelistId, productId, unit])
+  @@unique([pricelistId, productId, categoryId, unit])
   @@map("pricelist_items")
 }
 
