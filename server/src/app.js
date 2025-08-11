@@ -8,6 +8,14 @@ import env from './config/env.js'
 import { errorHandler } from './middleware/error.middleware.js'
 import healthRoutes from './routes/health.routes.js'
 import authRoutes from './routes/auth.routes.js'
+import productRoutes from './routes/product.routes.js'
+import categoryRoutes from './routes/category.routes.js'
+import uploadRoutes from './routes/upload.routes.js'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express()
 const prisma = new PrismaClient()
@@ -23,6 +31,9 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
+// Serve static files from uploads directory
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')))
+
 // Request logging
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path}`)
@@ -32,6 +43,9 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/health', healthRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/products', productRoutes)
+app.use('/api/categories', categoryRoutes)
+app.use('/api/upload', uploadRoutes)
 
 // 404 handler
 app.use('*', (req, res) => {

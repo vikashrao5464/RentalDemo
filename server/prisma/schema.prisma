@@ -66,6 +66,7 @@ model Product {
   name        String
   description String?
   sku         String   @unique
+  dailyDeposit Decimal? @db.Decimal(10, 2)
   isRentable  Boolean  @default(true)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -95,6 +96,7 @@ model ProductImage {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 
+  @@unique([productId, url])
   @@map("product_images")
 }
 

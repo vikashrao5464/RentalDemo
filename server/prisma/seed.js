@@ -94,6 +94,7 @@ async function main() {
       name: 'Professional DSLR Camera',
       description: 'High-quality DSLR camera perfect for professional photography and events',
       sku: 'CAM-001',
+      dailyDeposit: 200,
       categoryName: 'Electronics',
       images: [
         'https://images.pexels.com/photos/90946/pexels-photo-90946.jpeg?auto=compress&cs=tinysrgb&w=800',
@@ -106,6 +107,7 @@ async function main() {
       name: 'Mountain Bike',
       description: 'Premium mountain bike for outdoor adventures and trail riding',
       sku: 'BIKE-001',
+      dailyDeposit: 100,
       categoryName: 'Sports',
       images: [
         'https://images.pexels.com/photos/100582/pexels-photo-100582.jpeg?auto=compress&cs=tinysrgb&w=800'
@@ -117,6 +119,7 @@ async function main() {
       name: 'Power Drill Set',
       description: 'Complete power drill set with various bits and accessories',
       sku: 'TOOL-001',
+      dailyDeposit: 50,
       categoryName: 'Tools',
       images: [
         'https://images.pexels.com/photos/1249611/pexels-photo-1249611.jpeg?auto=compress&cs=tinysrgb&w=800'
@@ -128,6 +131,7 @@ async function main() {
       name: 'Gaming Laptop',
       description: 'High-performance gaming laptop with latest graphics card',
       sku: 'LAP-001',
+      dailyDeposit: 300,
       categoryName: 'Electronics',
       images: [
         'https://images.pexels.com/photos/205421/pexels-photo-205421.jpeg?auto=compress&cs=tinysrgb&w=800'
@@ -139,6 +143,7 @@ async function main() {
       name: 'Tent (4-Person)',
       description: 'Spacious 4-person camping tent, waterproof and easy to set up',
       sku: 'TENT-001',
+      dailyDeposit: 75,
       categoryName: 'Sports',
       images: [
         'https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=800'
@@ -150,6 +155,7 @@ async function main() {
       name: 'Electric Scooter',
       description: 'Eco-friendly electric scooter for city commuting',
       sku: 'SCOOT-001',
+      dailyDeposit: 150,
       categoryName: 'Vehicles',
       images: [
         'https://images.pexels.com/photos/7163619/pexels-photo-7163619.jpeg?auto=compress&cs=tinysrgb&w=800'
@@ -161,6 +167,7 @@ async function main() {
       name: 'Professional Projector',
       description: 'High-resolution projector for presentations and events',
       sku: 'PROJ-001',
+      dailyDeposit: 250,
       categoryName: 'Electronics',
       images: [
         'https://images.pexels.com/photos/2041540/pexels-photo-2041540.jpeg?auto=compress&cs=tinysrgb&w=800'
@@ -172,12 +179,37 @@ async function main() {
       name: 'Kayak (Single)',
       description: 'Single-person kayak perfect for water adventures',
       sku: 'KAYAK-001',
+      dailyDeposit: 80,
       categoryName: 'Sports',
       images: [
         'https://images.pexels.com/photos/416978/pexels-photo-416978.jpeg?auto=compress&cs=tinysrgb&w=800'
       ],
       pricing: { hour: 8, day: 35, week: 200, month: 650 },
       stock: 7
+    },
+    {
+      name: 'Wireless Microphone Set',
+      description: 'Professional wireless microphone system for events and presentations',
+      sku: 'MIC-001',
+      dailyDeposit: 120,
+      categoryName: 'Electronics',
+      images: [
+        'https://images.pexels.com/photos/164938/pexels-photo-164938.jpeg?auto=compress&cs=tinysrgb&w=800'
+      ],
+      pricing: { hour: 15, day: 75, week: 450, month: 1500 },
+      stock: 6
+    },
+    {
+      name: 'Camping Backpack',
+      description: 'Large capacity hiking backpack with multiple compartments',
+      sku: 'PACK-001',
+      dailyDeposit: 40,
+      categoryName: 'Sports',
+      images: [
+        'https://images.pexels.com/photos/1687845/pexels-photo-1687845.jpeg?auto=compress&cs=tinysrgb&w=800'
+      ],
+      pricing: { day: 12, week: 70, month: 250 },
+      stock: 15
     }
   ]
 
@@ -191,6 +223,7 @@ async function main() {
         name: productData.name,
         description: productData.description,
         sku: productData.sku,
+        dailyDeposit: productData.dailyDeposit,
         categoryId: category.id,
         isRentable: true,
         isActive: true
