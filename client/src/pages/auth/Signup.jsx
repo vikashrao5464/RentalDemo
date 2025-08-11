@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useAuth } from '../../contexts/AuthContext'
 
 const signupSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -17,6 +18,9 @@ const signupSchema = z.object({
 
 export default function Signup() {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const { register: registerUser } = useAuth()
+  const navigate = useNavigate()
   
   const {
     register,
@@ -28,11 +32,19 @@ export default function Signup() {
 
   const onSubmit = async (data) => {
     setLoading(true)
+    setError('')
+    
     try {
-      // Signup logic will be implemented
-      console.log('Signup data:', data)
+      const { confirmPassword, ...userData } = data
+      const result = await registerUser(userData)
+      
+      if (result.success) {
+        navigate('/')
+      } else {
+        setError(result.message)
+      }
     } catch (error) {
-      console.error('Signup error:', error)
+      setError('An unexpected error occurred')
     } finally {
       setLoading(false)
     }
@@ -57,6 +69,12 @@ export default function Signup() {
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -66,6 +84,7 @@ export default function Signup() {
                 <input
                   {...register('firstName')}
                   type="text"
+                  autoComplete="given-name"
                   className="input-field mt-1"
                   placeholder="First name"
                 />
@@ -81,6 +100,7 @@ export default function Signup() {
                 <input
                   {...register('lastName')}
                   type="text"
+                  autoComplete="family-name"
                   className="input-field mt-1"
                   placeholder="Last name"
                 />
@@ -97,6 +117,7 @@ export default function Signup() {
               <input
                 {...register('email')}
                 type="email"
+                autoComplete="email"
                 className="input-field mt-1"
                 placeholder="Enter your email"
               />
@@ -112,6 +133,7 @@ export default function Signup() {
               <input
                 {...register('password')}
                 type="password"
+                autoComplete="new-password"
                 className="input-field mt-1"
                 placeholder="Create a password"
               />
@@ -127,6 +149,7 @@ export default function Signup() {
               <input
                 {...register('confirmPassword')}
                 type="password"
+                autoComplete="new-password"
                 className="input-field mt-1"
                 placeholder="Confirm your password"
               />

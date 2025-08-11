@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useAuth } from '../../contexts/AuthContext'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -11,6 +12,12 @@ const loginSchema = z.object({
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  const from = location.state?.from?.pathname || '/'
   
   const {
     register,
@@ -22,11 +29,18 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     setLoading(true)
+    setError('')
+    
     try {
-      // Login logic will be implemented
-      console.log('Login data:', data)
+      const result = await login(data)
+      
+      if (result.success) {
+        navigate(from, { replace: true })
+      } else {
+        setError(result.message)
+      }
     } catch (error) {
-      console.error('Login error:', error)
+      setError('An unexpected error occurred')
     } finally {
       setLoading(false)
     }
@@ -51,6 +65,12 @@ export default function Login() {
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -59,6 +79,7 @@ export default function Login() {
               <input
                 {...register('email')}
                 type="email"
+                autoComplete="email"
                 className="input-field mt-1"
                 placeholder="Enter your email"
               />
@@ -74,6 +95,7 @@ export default function Login() {
               <input
                 {...register('password')}
                 type="password"
+                autoComplete="current-password"
                 className="input-field mt-1"
                 placeholder="Enter your password"
               />
