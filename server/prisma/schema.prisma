@@ -1,0 +1,320 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  role           Role            @relation(fields: [roleId], references: [id])
+  roleId         String
+  quotes         Quote[]
+  orders         Order[]
+  payments       Payment[]
+  refreshTokens  RefreshToken[]
+  reservationHolds ReservationHold[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique // 'admin', 'customer'
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users User[]
+
+  @@map("roles")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  sku         String   @unique
+  isRentable  Boolean  @default(true)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  category       Category        @relation(fields: [categoryId], references: [id])
+  categoryId     String
+  images         ProductImage[]
+  stock          Stock[]
+  pricelistItems PricelistItem[]
+  quoteItems     QuoteItem[]
+  orderItems     OrderItem[]
+  reservationHolds ReservationHold[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  url       String
+  altText   String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  @@map("product_images")
+}
+
+model Stock {
+  id            String   @id @default(cuid())
+  totalQuantity Int      @default(0)
+  availableQuantity Int  @default(0)
+  reservedQuantity  Int  @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @unique
+
+  @@map("stock")
+}
+
+model Pricelist {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  validFrom   DateTime @default(now())
+  validTo     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  items PricelistItem[]
+
+  @@map("pricelists")
+}
+
+model PricelistItem {
+  id        String   @id @default(cuid())
+  unit      String   // 'hour', 'day', 'week', 'month'
+  price     Decimal  @db.Decimal(10, 2)
+  minDuration Int?   // minimum rental duration
+  maxDuration Int?   // maximum rental duration
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  pricelist   Pricelist @relation(fields: [pricelistId], references: [id])
+  pricelistId String
+  product     Product   @relation(fields: [productId], references: [id])
+  productId   String
+
+  @@unique([pricelistId, productId, unit])
+  @@map("pricelist_items")
+}
+
+model Quote {
+  id          String   @id @default(cuid())
+  quoteNumber String   @unique
+  status      String   @default("draft") // 'draft', 'sent', 'confirmed', 'expired'
+  startDate   DateTime
+  endDate     DateTime
+  subtotal    Decimal  @db.Decimal(10, 2)
+  taxAmount   Decimal  @db.Decimal(10, 2) @default(0)
+  totalAmount Decimal  @db.Decimal(10, 2)
+  notes       String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  customer   User        @relation(fields: [customerId], references: [id])
+  customerId String
+  items      QuoteItem[]
+  orders     Order[]
+
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id          String  @id @default(cuid())
+  quantity    Int
+  unit        String  // 'hour', 'day', 'week', 'month'
+  unitPrice   Decimal @db.Decimal(10, 2)
+  duration    Int     // number of units
+  totalPrice  Decimal @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  quote     Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quoteId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  @@map("quote_items")
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  orderNumber String   @unique
+  status      String   @default("pending") // 'pending', 'confirmed', 'picked_up', 'returned', 'cancelled'
+  startDate   DateTime
+  endDate     DateTime
+  actualReturnDate DateTime?
+  subtotal    Decimal  @db.Decimal(10, 2)
+  taxAmount   Decimal  @db.Decimal(10, 2) @default(0)
+  totalAmount Decimal  @db.Decimal(10, 2)
+  paidAmount  Decimal  @db.Decimal(10, 2) @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  customer        User              @relation(fields: [customerId], references: [id])
+  customerId      String
+  quote           Quote?            @relation(fields: [quoteId], references: [id])
+  quoteId         String?
+  items           OrderItem[]
+  payments        Payment[]
+  fulfillmentTasks FulfillmentTask[]
+  invoices        Invoice[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  quantity    Int
+  unit        String  // 'hour', 'day', 'week', 'month'
+  unitPrice   Decimal @db.Decimal(10, 2)
+  duration    Int     // number of units
+  totalPrice  Decimal @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  @@map("order_items")
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  paymentNumber   String   @unique
+  amount          Decimal  @db.Decimal(10, 2)
+  method          String   // 'razorpay', 'stripe', 'cash'
+  status          String   @default("pending") // 'pending', 'completed', 'failed', 'refunded'
+  gatewayId       String?  // Payment gateway transaction ID
+  gatewayResponse Json?    // Store gateway response
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  customer   User   @relation(fields: [customerId], references: [id])
+  customerId String
+  order      Order  @relation(fields: [orderId], references: [id])
+  orderId    String
+
+  @@map("payments")
+}
+
+model FulfillmentTask {
+  id          String   @id @default(cuid())
+  type        String   // 'pickup', 'return'
+  status      String   @default("pending") // 'pending', 'in_progress', 'completed', 'cancelled'
+  scheduledAt DateTime
+  completedAt DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
+
+  @@map("fulfillment_tasks")
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @unique
+  type          String   // 'rental', 'late_fee', 'damage'
+  amount        Decimal  @db.Decimal(10, 2)
+  dueDate       DateTime
+  status        String   @default("pending") // 'pending', 'paid', 'overdue'
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
+
+  @@map("invoices")
+}
+
+model ReservationHold {
+  id        String   @id @default(cuid())
+  quantity  Int
+  startDate DateTime
+  endDate   DateTime
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  customer   User    @relation(fields: [customerId], references: [id])
+  customerId String
+  product    Product @relation(fields: [productId], references: [id])
+  productId  String
+
+  @@map("reservation_holds")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("refresh_tokens")
+}
